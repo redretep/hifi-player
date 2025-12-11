@@ -12,8 +12,6 @@ https://github.com/sachinsenal0x64/hifi - Tidal Music integration for Subsonic/J
 
 https://github.com/uimaxbai/hifi-api - API that fetches the streams and metadata from search queries
 
-https://github.com/monochrome-music/monochrome - alternative free tidal music player that uses the same API
-
 https://github.com/EduardPrigoana/hifi-instances - list of instances provided for the hifi API
 
 https://github.com/redretep/spofree - free tidal player with spotify like ui (using hifi api)
