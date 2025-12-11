@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>simple api player</title>
+</head>
+<body>
+
+<input id="q" placeholder="enter song name">
+<button id="go">search</button>
+<div id="res"></div>
+<audio id="p" controls></audio>
+<pre id="log" style="white-space:pre-wrap"></pre>
+
+<script>
+const API = "https://london.monochrome.tf"; <!--put in any working hifi-api-->
+const $ = id => document.getElementById(id);
+const log = m => { $('log').textContent = typeof m=='string'?m:JSON.stringify(m,null,2) };
+
+async function j(u){ const r = await fetch(u); return r.json() }
+
+function decodeMan(m){ try{ const jn = JSON.parse(atob(m)); return jn.urls?.[0] || null }catch(e){ return null } }
+
+async function search(){
+  const q = $('q').value.trim();
+  if(!q) return;
+  let d = await j(`${API}/search/?s=${encodeURIComponent(q)}`);
+  let items = d.items || d.data?.items || d.data || [];
+  if(!Array.isArray(items)) items = [];
+
+  let out = '';
+  items.forEach(x=>{
+    let t = x.title || x?.["Song Info"]?.title || 'unknown title';
+    let a = x.artist?.name || x.artist || x.artists?.[0]?.name || 'unknown artist';
+    let id = x.id || x.trackId || x?.["Song Info"]?.id || x?.["Track Info"]?.trackId;
+    if(id) out += `<button onclick="play(${id})">${t} - ${a}</button><br>`;
+  });
+
+  $('res').innerHTML = out || 'no results';
+}
+
+async function play(id){
+  let d = await j(`${API}/track/?id=${id}&quality=LOSSLESS`); <!--replace LOSSLESS with other qualities if you want-->
+
+  let stream = d.url || d.OriginalTrackUrl || d?.data?.url;
+
+  if(!stream){
+    let man = d.manifest || d?.data?.manifest || d?.["Track Info"]?.manifest;
+    if(man) stream = decodeMan(man);
+  }
+
+  if(!stream){ log(d); return log('no stream available'); }
+
+  if(stream.startsWith('http:')) stream = 'https:' + stream.slice(5);
+  $('p').src = stream;
+  $('p').play().catch(()=>{});
+  log('playing ' + id);
+}
+
+$('go').onclick = search;
+$('q').onkeydown = e=>{ if(e.key=='Enter') search() };
+</script>
+
+</body>
+</html>
